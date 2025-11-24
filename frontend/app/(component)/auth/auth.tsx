@@ -13,7 +13,7 @@ import { useRouter } from "next/navigation";
 interface CurrentUser {
   id: string
   email: string
-  role:'USER' | 'ADMIN' |'MODERATOR'
+  role: 'user' | 'admin' | 'moderator'
 }
 
 interface LoginPageProps {
@@ -21,65 +21,65 @@ interface LoginPageProps {
 }
 
 export default function AuthLayout(
-  {onLogin }: LoginPageProps) {
-  
-      const [activeTab, setActiveTab] = useState('login');
-        const [loginEmail, setLoginEmail] = useState('');
-        const [loginPassword, setLoginPassword] = useState('');
-        const [signupName, setSignupName] = useState('');
-        const [signupEmail, setSignupEmail] = useState('');
-        const [signupPassword, setSignupPassword] = useState('');
-        const router = useRouter();
+  { onLogin }: LoginPageProps) {
+
+  const [activeTab, setActiveTab] = useState('login');
+  const [loginEmail, setLoginEmail] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
+  const [signupName, setSignupName] = useState('');
+  const [signupEmail, setSignupEmail] = useState('');
+  const [signupPassword, setSignupPassword] = useState('');
+  const router = useRouter();
 
 
-        
-  const handleLogin = async(e: React.FormEvent) => {
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     if (loginEmail && loginPassword) {
-    
+
       const res = await axios.post('http://localhost:3001/api/v1/user/login', {
         email: loginEmail,
         password: loginPassword,
-       });
+      });
 
-     
 
-        if (res.status === 200) {
-          onLogin({
-            id: res.data.user.id,
-            email: res.data.user.email,
-            role: res.data.user.role.toLowerCase()
-          })
 
-        
-     
+      if (res.status === 200) {
+        onLogin({
+          id: res.data.user.id,
+          email: res.data.user.email,
+          role: res.data.user.role.toLowerCase()
+        })
+
+
+
+      }
     }
   }
-}
 
-  const handleSignup = async(e: React.FormEvent) => {
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault()
-    if ( signupEmail && signupPassword) {
-       const res =await axios.post('http://localhost:3001/api/v1/user/signup', {
+    if (signupEmail && signupPassword) {
+      const res = await axios.post('http://localhost:3001/api/v1/user/signup', {
         email: signupEmail,
         password: signupPassword,
-       });
+      });
 
-        if (res.status === 200) {
-          onLogin({
-            id: res.data.user.id,
-            email: res.data.user.email,
-            role: res.data.user.role.toLowerCase()
-          })
-        }
+      if (res.status === 200) {
+        onLogin({
+          id: res.data.user.id,
+          email: res.data.user.email,
+          role: res.data.user.role.toLowerCase()
+        })
+      }
     }
   }
 
 
 
 
-    return (
-     <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/5 flex items-center justify-center p-4 overflow-hidden">
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/5 flex items-center justify-center p-4 overflow-hidden">
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-primary/20 to-accent/20 rounded-full blur-3xl animate-pulse" />
         <div className="absolute bottom-0 left-0 w-96 h-96 bg-gradient-to-tr from-accent/20 to-primary/20 rounded-full blur-3xl animate-pulse" />
@@ -137,15 +137,15 @@ export default function AuthLayout(
                       className="bg-secondary/50 border-white/10 hover:bg-white/10 transition-all duration-300 focus:ring-2 focus:ring-primary/50"
                     />
                   </div>
-                  <Button 
-                    type="submit" 
+                  <Button
+                    type="submit"
                     className="w-full bg-gradient-to-r from-primary to-accent hover:from-primary/80 hover:to-accent/80 text-primary-foreground shadow-lg hover:shadow-xl hover:shadow-primary/20"
                   >
                     Sign In
                   </Button>
                 </form>
 
-               
+
               </TabsContent>
 
               <TabsContent value="signup" className="space-y-4">
@@ -189,8 +189,8 @@ export default function AuthLayout(
                       className="bg-secondary/50 border-white/10 hover:bg-white/10 transition-all duration-300 focus:ring-2 focus:ring-primary/50"
                     />
                   </div>
-                  <Button 
-                    type="submit" 
+                  <Button
+                    type="submit"
                     className="w-full bg-gradient-to-r from-primary to-accent hover:from-primary/80 hover:to-accent/80 text-primary-foreground shadow-lg hover:shadow-xl hover:shadow-primary/20"
                   >
                     Create Account
@@ -205,7 +205,7 @@ export default function AuthLayout(
           </CardContent>
         </Card>
 
-       
+
       </div>
     </div>
   );

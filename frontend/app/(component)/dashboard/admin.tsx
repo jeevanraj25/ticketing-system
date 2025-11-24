@@ -7,13 +7,12 @@ import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { LogOut, AlertCircle, Clock, CheckCircle, Ticket } from 'lucide-react'
 import axios from 'axios'
-import { get } from 'http'
 
 interface CurrentUser {
   id: string
-  name: string
+  name?: string
   email: string
-  role: 'user' | 'admin'
+  role: 'user' | 'admin' | 'moderator'
 }
 
 interface AssignedTo {
@@ -46,31 +45,43 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
 
   const [selectedTicket, setSelectedTicket] = useState<TicketType | null>(null)
 
-    useEffect (() =>{
-        async function getAlltickets(){
-        const res = await axios.get('http://localhost:3001/api/v1/ticket/', {
-          withCredentials: true,
-        });
-        
+  useEffect(() => {
+    async function getAlltickets() {
+      const res = await axios.get('http://localhost:3001/api/v1/ticket/', {
+        withCredentials: true,
+      });
 
-      console.log("data",res);  
-        if(res.status === 200){
-          setTickets(res.data.tickets);
+
+     
+      if (res.status === 200) {
+        setTickets(res.data.tickets);
       }
 
 
     }
-     getAlltickets();
+    getAlltickets();
 
 
-    },[]);
+  }, []);
 
-  const updateTicketStatus = (ticketId: number, newStatus: 'open' | 'processing' | 'resolved') => {
-    setTickets(
-      tickets.map((ticket) => (ticket.id === ticketId ? { ...ticket, status: newStatus } : ticket))
-    )
-    if (selectedTicket?.id === ticketId) {
-      setSelectedTicket({ ...selectedTicket, status: newStatus })
+  const updateTicketStatus = async (ticketId: number, newStatus: 'open' | 'processing' | 'resolved') => {
+    try {
+      const res = await axios.patch(`http://localhost:3001/api/v1/ticket/${ticketId}/status`, {
+        status: newStatus
+      }, {
+        withCredentials: true
+      });
+
+      if (res.status === 200) {
+        setTickets(
+          tickets.map((ticket) => (ticket.id === ticketId ? { ...ticket, status: newStatus } : ticket))
+        )
+        if (selectedTicket?.id === ticketId) {
+          setSelectedTicket({ ...selectedTicket, status: newStatus })
+        }
+      }
+    } catch (error) {
+      console.error("Error updating ticket status:", error);
     }
   }
 
@@ -157,7 +168,7 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
             { label: 'Processing', count: processingTickets, icon: Clock, color: 'from-blue-500/30 to-blue-500/10', textColor: 'text-blue-300' },
             { label: 'Resolved', count: resolvedTickets, icon: CheckCircle, color: 'from-green-500/30 to-green-500/10', textColor: 'text-green-300' },
           ].map((stat) => (
-            <Card 
+            <Card
               key={stat.label}
               className="border-white/10 backdrop-blur-xl bg-white/5 hover:shadow-lg hover:shadow-primary/10 hover:border-primary/50 transition-all duration-300 group"
             >
@@ -189,11 +200,10 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
                     <div
                       key={ticket.id}
                       onClick={() => setSelectedTicket(ticket)}
-                      className={`p-4 rounded-lg border transition-all duration-300 cursor-pointer hover:scale-105 hover:shadow-lg group ${
-                        selectedTicket?.id === ticket.id
-                          ? 'border-primary/50 bg-gradient-to-r from-primary/20 to-accent/20 shadow-lg shadow-primary/20'
-                          : 'border-white/10 backdrop-blur-xl bg-white/5 hover:border-primary/50 hover:bg-primary/5'
-                      }`}
+                      className={`p-4 rounded-lg border transition-all duration-300 cursor-pointer hover:scale-105 hover:shadow-lg group ${selectedTicket?.id === ticket.id
+                        ? 'border-primary/50 bg-gradient-to-r from-primary/20 to-accent/20 shadow-lg shadow-primary/20'
+                        : 'border-white/10 backdrop-blur-xl bg-white/5 hover:border-primary/50 hover:bg-primary/5'
+                        }`}
                     >
                       <div className="flex items-start justify-between gap-3 mb-2">
                         <div className="flex-1">

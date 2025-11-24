@@ -13,7 +13,7 @@ import axios from 'axios'
 interface CurrentUser {
   id: string
   email: string
-  role: 'USER' | 'ADMIN' |'MODERATOR'
+  role: 'user' | 'admin' | 'moderator'
 }
 
 interface TicketType {
@@ -48,21 +48,21 @@ export function UserDashboard({ user, onLogout }: UserDashboardProps) {
 
   useEffect(() => {
     // Fetch tickets from backend API here and setTickets
-   
-    async function getAlltickets(){
-        const res = await axios.get('http://localhost:3001/api/v1/ticket/',
-          {
-            withCredentials: true,
-          }
-        );
 
-        console.log("data",res);
-
-        if(res.status === 200){
-          setTickets(res.data.tickets);
+    async function getAlltickets() {
+      const res = await axios.get('http://localhost:3001/api/v1/ticket/',
+        {
+          withCredentials: true,
         }
-     }
-      getAlltickets();
+      );
+
+      console.log("data", res);
+
+      if (res.status === 200) {
+        setTickets(res.data.tickets);
+      }
+    }
+    getAlltickets();
   }, [])
 
   const [showForm, setShowForm] = useState(false)
@@ -70,22 +70,33 @@ export function UserDashboard({ user, onLogout }: UserDashboardProps) {
   const [description, setDescription] = useState('')
   const [priority, setPriority] = useState('medium')
 
-  const handleCreateTicket = (e: React.FormEvent) => {
+  const handleCreateTicket = async (e: React.FormEvent) => {
     e.preventDefault()
     if (title && description) {
-      const newTicket: TicketType = {
-        id: Math.random().toString(36).substr(2, 9),
-        title,
-        description,
-        status: 'open',
-        createdAt: new Date().toISOString().split('T')[0],
-        priority: priority as 'low' | 'medium' | 'high',
+      try {
+        const res = await axios.post('http://localhost:3001/api/v1/ticket/create', {
+          title,
+          description
+        }, {
+          withCredentials: true
+        });
+
+        if (res.status === 201) {
+          // Refresh tickets
+          const ticketsRes = await axios.get('http://localhost:3001/api/v1/ticket/', {
+            withCredentials: true,
+          });
+          if (ticketsRes.status === 200) {
+            setTickets(ticketsRes.data.tickets);
+          }
+          setTitle('')
+          setDescription('')
+          setPriority('medium') // Note: Priority is not yet supported by backend create API
+          setShowForm(false)
+        }
+      } catch (error) {
+        console.error("Error creating ticket:", error);
       }
-      setTickets([newTicket, ...tickets])
-      setTitle('')
-      setDescription('')
-      setPriority('medium')
-      setShowForm(false)
     }
   }
 
@@ -127,7 +138,7 @@ export function UserDashboard({ user, onLogout }: UserDashboardProps) {
           </div>
           <div className="flex items-center gap-4">
             <div className="text-right hidden sm:block">
-    
+
               <p className="text-xs text-muted-foreground">{user.email}</p>
             </div>
             <Button
@@ -193,8 +204,8 @@ export function UserDashboard({ user, onLogout }: UserDashboardProps) {
                   />
                 </div>
                 <div className="flex gap-2">
-                  <Button 
-                    type="submit" 
+                  <Button
+                    type="submit"
                     className="flex-1 bg-gradient-to-r from-primary to-accent hover:from-primary/80 hover:to-accent/80 text-primary-foreground shadow-lg hover:shadow-xl"
                   >
                     Create Ticket
@@ -222,8 +233,8 @@ export function UserDashboard({ user, onLogout }: UserDashboardProps) {
             </Card>
           ) : (
             tickets.map((ticket) => (
-              <Card 
-                key={ticket.id} 
+              <Card
+                key={ticket.id}
                 className="border-white/10 backdrop-blur-xl bg-white/5 hover:shadow-lg hover:shadow-primary/10 hover:border-primary/50 transition-all duration-300"
               >
                 <CardContent className="pt-6">
@@ -242,9 +253,9 @@ export function UserDashboard({ user, onLogout }: UserDashboardProps) {
                       </div>
                     </div>
                     <div className="flex-shrink-0">
-                      <div className="text-xs text-muted-foreground font-mono bg-secondary/50 backdrop-blur-xl border border-white/10 px-3 py-2 rounded-lg hover:text-primary transition-all duration-300">
+                      {/* <div className="text-xs text-muted-foreground font-mono bg-secondary/50 backdrop-blur-xl border border-white/10 px-3 py-2 rounded-lg hover:text-primary transition-all duration-300">
                         #{ticket.id.slice(0, 6)}
-                      </div>
+                      </div> */}
                     </div>
                   </div>
                 </CardContent>
