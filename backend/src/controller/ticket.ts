@@ -1,0 +1,124 @@
+import { prisma } from "../../db/prisma"
+import { inngest } from "../../inngest/client";
+
+
+
+export const createTicket =async (req:any,res:any) => {
+
+    try {
+        const {title, description} = req.body;
+
+        if(!title || !description){
+            return res.status(400).json({message:"Title and Description are required"});
+        }
+
+        console.log("Creating ticket for user:", req.user);
+        const ticket = await prisma.ticket.create({
+            data:{
+                title,
+                description,
+                createdBy:  {
+    connect: { id: req.user.userId }
+  }
+            }
+        });
+
+        await inngest.send({
+            name:"ticket.created",
+            data:{
+                ticketId: ticket.id,
+                title,
+                description,
+                createdBy: req.user.userId,
+            }
+        })
+
+        res.status(201).json({message:"Ticket created and processing started"});
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({message:"Internal Server Error",
+        error
+        });
+    }
+
+}
+
+
+export const getAllTickets = async (req:any, res:any) => {
+    try {
+        let tickets;
+        console.log("User role:", req.user.role);
+        if(req.user.role.toLowerCase() !== "user"){
+            console.log("Fetching all tickets for admin/moderator");
+            // admin / non-user: return all tickets with assignedTo populated
+            tickets = await prisma.ticket.findMany({
+               include :{
+                assignedTo :{
+                    select:{
+                        id:true,
+                        email:true,
+                }
+               },
+             },
+                orderBy :{createdAt:"desc"}
+            });
+        }else{
+           
+            // regular user: return only tickets created by them, select limited fields
+            tickets = await prisma.ticket.findMany({
+                where :{createdById : req.user.userId},
+                select: { id: true, title: true, description: true, status: true, createdAt: true },
+                orderBy :{createdAt:"desc"}
+            });
+        }
+
+        res.status(200).json({tickets});
+    } catch (error) {
+         console.log(error);
+        res.status(500).json({message:"Internal Server Error",
+        error
+        });
+    }
+}
+
+
+export const getTicketById = async (req:any, res:any) => {
+    try {
+         const id = Number(req.params.id);
+    if (Number.isNaN(id)) return res.status(400).json({ message: "Invalid id" });
+
+        let ticket
+
+        if(req.user.role !== "user"){
+              // admin / non-user: return full ticket with assignedTo populated
+            ticket= await prisma.ticket.findUnique({
+                where :{id},
+                include :{
+                    assignedTo :{
+                        select :{
+                            id:true,
+                            email:true,
+                        }
+                    }
+                }
+            });
+        }else{
+             // regular user: return only if they created it, and select limited fields
+            ticket= await prisma.ticket.findFirst({
+                where :{id,createdById : req.user.userId   },
+                select: { id: true, title: true, description: true, status: true, createdAt: true },
+            })
+        }
+
+         if (!ticket) {
+            return res.status(404).json({ message: "Ticket not found" });
+        }
+    return res.status(200).json({ ticket });
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({message:"Internal Server Error",
+        error
+        });
+    }
+}
