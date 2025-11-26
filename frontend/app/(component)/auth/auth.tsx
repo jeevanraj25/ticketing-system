@@ -40,6 +40,8 @@ export default function AuthLayout(
       const res = await axios.post('http://localhost:3001/api/v1/user/login', {
         email: loginEmail,
         password: loginPassword,
+      }, {
+        withCredentials: true
       });
 
 
@@ -63,6 +65,8 @@ export default function AuthLayout(
       const res = await axios.post('http://localhost:3001/api/v1/user/signup', {
         email: signupEmail,
         password: signupPassword,
+      }, {
+        withCredentials: true
       });
 
       if (res.status === 200) {

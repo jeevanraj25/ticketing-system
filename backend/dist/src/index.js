@@ -16,6 +16,10 @@ const on_ticket_create_1 = require("../inngest/functions/on-ticket-create");
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 const port = process.env.PORT || 3001;
+app.use((req, res, next) => {
+    console.log("Request Origin:", req.headers.origin);
+    next();
+});
 app.use((0, cors_1.default)({
     origin: 'http://localhost:3000',
     credentials: true

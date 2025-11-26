@@ -9,7 +9,8 @@ export const createTicket = async (req: any, res: any) => {
             return res.status(400).json({ message: "Title and Description are required" });
         }
 
-        console.log("Creating ticket for user:", req.user);
+       
+
         const ticket = await prisma.ticket.create({
             data: {
                 title,
@@ -45,10 +46,11 @@ export const createTicket = async (req: any, res: any) => {
 
 export const getAllTickets = async (req: any, res: any) => {
     try {
+        res.set('Cache-Control', 'no-store');
         let tickets;
-        console.log("User role:", req.user.role);
+       
         if (req.user.role.toLowerCase() !== "user") {
-            console.log("Fetching all tickets for admin/moderator");
+
             // admin / non-user: return all tickets with assignedTo populated
             tickets = await prisma.ticket.findMany({
                 include: {
@@ -85,6 +87,7 @@ export const getTicketById = async (req: any, res: any) => {
         const id = Number(req.params.id);
         if (Number.isNaN(id)) return res.status(400).json({ message: "Invalid id" });
 
+        res.set('Cache-Control', 'no-store');
         let ticket
 
         if (req.user.role !== "user") {

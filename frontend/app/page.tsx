@@ -41,8 +41,16 @@ export default function Home() {
     setCurrentUser(user)
   }
 
-  const handleLogout = () => {
-    setCurrentUser(null)
+  const handleLogout = async () => {
+    try {
+      await axios.post('http://localhost:3001/api/v1/user/logout', {}, {
+        withCredentials: true
+      });
+    } catch (error) {
+      console.error("Logout failed", error);
+    } finally {
+      setCurrentUser(null)
+    }
   }
 
   if (loading) {

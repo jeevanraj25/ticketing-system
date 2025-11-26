@@ -4,10 +4,10 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import UserRouter from "./router/user";
 import TicketRouter from "./router/ticket";
-import {serve} from "inngest/express";
+import { serve } from "inngest/express";
 import { inngest } from "../inngest/client";
-import {onUserSignup} from "../inngest/functions/on-signup"
-import {onTicketCreate} from "../inngest/functions/on-ticket-create";
+import { onUserSignup } from "../inngest/functions/on-signup"
+import { onTicketCreate } from "../inngest/functions/on-ticket-create";
 
 
 dotenv.config();
@@ -15,6 +15,7 @@ dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 3001;
+
 
 
 
@@ -39,5 +40,5 @@ app.use(
 
 
 app.listen(port, () => {
-    console.log(`Server is running on port ${port}`);
+  console.log(`Server is running on port ${port}`);
 });

@@ -41,8 +41,9 @@ const createTicket = async (req, res) => {
 exports.createTicket = createTicket;
 const getAllTickets = async (req, res) => {
     try {
+        res.set('Cache-Control', 'no-store');
         let tickets;
-        console.log("User role:", req.user.role);
+        console.log("User role:", req.user);
         if (req.user.role.toLowerCase() !== "user") {
             console.log("Fetching all tickets for admin/moderator");
             // admin / non-user: return all tickets with assignedTo populated
@@ -82,6 +83,7 @@ const getTicketById = async (req, res) => {
         const id = Number(req.params.id);
         if (Number.isNaN(id))
             return res.status(400).json({ message: "Invalid id" });
+        res.set('Cache-Control', 'no-store');
         let ticket;
         if (req.user.role !== "user") {
             // admin / non-user: return full ticket with assignedTo populated
